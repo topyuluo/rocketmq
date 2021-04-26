@@ -175,6 +175,7 @@ public class BrokerOuterAPI {
         return registerBrokerResultList;
     }
 
+    //发起远程调用
     private RegisterBrokerResult registerBroker(
         final String namesrvAddr,
         final boolean oneway,
