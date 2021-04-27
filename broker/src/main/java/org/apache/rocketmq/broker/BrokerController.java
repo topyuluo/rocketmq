@@ -893,6 +893,7 @@ public class BrokerController {
             @Override
             public void run() {
                 try {
+                    System.out.println("每 30s 向NameServer 进行注册 ！！");
                     BrokerController.this.registerBrokerAll(true, false, brokerConfig.isForceRegister());
                 } catch (Throwable e) {
                     log.error("registerBrokerAll Exception", e);
@@ -944,11 +945,11 @@ public class BrokerController {
             topicConfigWrapper.setTopicConfigTable(topicConfigTable);
         }
 
-        if (forceRegister || needRegister(this.brokerConfig.getBrokerClusterName(),
-            this.getBrokerAddr(),
-            this.brokerConfig.getBrokerName(),
-            this.brokerConfig.getBrokerId(),
-            this.brokerConfig.getRegisterBrokerTimeoutMills())) {
+        if (forceRegister || needRegister(this.brokerConfig.getBrokerClusterName()
+                , this.getBrokerAddr()
+                , this.brokerConfig.getBrokerName()
+                , this.brokerConfig.getBrokerId()
+                , this.brokerConfig.getRegisterBrokerTimeoutMills())) {
             doRegisterBrokerAll(checkOrderConfig, oneway, topicConfigWrapper);
         }
     }
@@ -957,17 +958,16 @@ public class BrokerController {
         TopicConfigSerializeWrapper topicConfigWrapper) {
 
         //调用 brokerOutApi 进行注册
-        List<RegisterBrokerResult> registerBrokerResultList = this.brokerOuterAPI.registerBrokerAll(
-            this.brokerConfig.getBrokerClusterName(),
-            this.getBrokerAddr(),
-            this.brokerConfig.getBrokerName(),
-            this.brokerConfig.getBrokerId(),
-            this.getHAServerAddr(),
-            topicConfigWrapper,
-            this.filterServerManager.buildNewFilterServerList(),
-            oneway,
-            this.brokerConfig.getRegisterBrokerTimeoutMills(),
-            this.brokerConfig.isCompressedRegister());
+        List<RegisterBrokerResult> registerBrokerResultList = this.brokerOuterAPI.registerBrokerAll(this.brokerConfig.getBrokerClusterName()
+                , this.getBrokerAddr()
+                , this.brokerConfig.getBrokerName()
+                , this.brokerConfig.getBrokerId()
+                , this.getHAServerAddr()
+                , topicConfigWrapper
+                , this.filterServerManager.buildNewFilterServerList()
+                , oneway
+                , this.brokerConfig.getRegisterBrokerTimeoutMills()
+                , this.brokerConfig.isCompressedRegister());
 
         if (registerBrokerResultList.size() > 0) {
             RegisterBrokerResult registerBrokerResult = registerBrokerResultList.get(0);

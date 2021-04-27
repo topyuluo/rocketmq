@@ -115,6 +115,7 @@ public class BrokerStartup {
 
             nettyClientConfig.setUseTLS(Boolean.parseBoolean(System.getProperty(TLS_ENABLE,
                 String.valueOf(TlsSystemConfig.tlsMode == TlsMode.ENFORCING))));
+            // 设置监听 10911 端口
             nettyServerConfig.setListenPort(10911);
             final MessageStoreConfig messageStoreConfig = new MessageStoreConfig();
 
@@ -150,6 +151,7 @@ public class BrokerStartup {
             }
 
             String namesrvAddr = brokerConfig.getNamesrvAddr();
+            System.out.println("namesever 地址 ：" + namesrvAddr);
             if (null != namesrvAddr) {
                 try {
                     String[] addrArray = namesrvAddr.split(";");
@@ -214,11 +216,11 @@ public class BrokerStartup {
             MixAll.printObjectProperties(log, messageStoreConfig);
 
             // 创建 BrokerController 对象实例
-            final BrokerController controller = new BrokerController(
-                brokerConfig,
-                nettyServerConfig,
-                nettyClientConfig,
-                messageStoreConfig);
+            final BrokerController controller = new BrokerController(brokerConfig
+                    , nettyServerConfig
+                    , nettyClientConfig
+                    , messageStoreConfig);
+
             // remember all configs to prevent discard
             controller.getConfiguration().registerConfig(properties);
 

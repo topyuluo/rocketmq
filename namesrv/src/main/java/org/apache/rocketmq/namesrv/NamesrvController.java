@@ -90,7 +90,6 @@ public class NamesrvController {
 
         //创建线程池 ， 每隔10s 扫描未活跃Broker信息
         this.scheduledExecutorService.scheduleAtFixedRate(new Runnable() {
-
             @Override
             public void run() {
                 NamesrvController.this.routeInfoManager.scanNotActiveBroker();
@@ -98,7 +97,6 @@ public class NamesrvController {
         }, 5, 10, TimeUnit.SECONDS);
 
         this.scheduledExecutorService.scheduleAtFixedRate(new Runnable() {
-
             @Override
             public void run() {
                 NamesrvController.this.kvConfigManager.printAllPeriodically();

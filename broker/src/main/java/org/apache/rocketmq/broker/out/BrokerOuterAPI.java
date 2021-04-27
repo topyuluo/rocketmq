@@ -110,17 +110,16 @@ public class BrokerOuterAPI {
         this.remotingClient.updateNameServerAddressList(lst);
     }
 
-    public List<RegisterBrokerResult> registerBrokerAll(
-        final String clusterName,
-        final String brokerAddr,
-        final String brokerName,
-        final long brokerId,
-        final String haServerAddr,
-        final TopicConfigSerializeWrapper topicConfigWrapper,
-        final List<String> filterServerList,
-        final boolean oneway,
-        final int timeoutMills,
-        final boolean compressed) {
+    public List<RegisterBrokerResult> registerBrokerAll(final String clusterName
+            , final String brokerAddr
+            , final String brokerName
+            , final long brokerId
+            , final String haServerAddr
+            , final TopicConfigSerializeWrapper topicConfigWrapper
+            , final List<String> filterServerList
+            , final boolean oneway
+            , final int timeoutMills
+            , final boolean compressed) {
 
         final List<RegisterBrokerResult> registerBrokerResultList = new CopyOnWriteArrayList<>();
 
@@ -176,14 +175,12 @@ public class BrokerOuterAPI {
     }
 
     //发起远程调用
-    private RegisterBrokerResult registerBroker(
-        final String namesrvAddr,
-        final boolean oneway,
-        final int timeoutMills,
-        final RegisterBrokerRequestHeader requestHeader,
-        final byte[] body
-    ) throws RemotingCommandException, MQBrokerException, RemotingConnectException, RemotingSendRequestException, RemotingTimeoutException,
-        InterruptedException {
+    private RegisterBrokerResult registerBroker(final String namesrvAddr
+            , final boolean oneway
+            , final int timeoutMills
+            , final RegisterBrokerRequestHeader requestHeader
+            , final byte[] body) throws RemotingCommandException, MQBrokerException, RemotingConnectException, RemotingSendRequestException, RemotingTimeoutException, InterruptedException {
+
         RemotingCommand request = RemotingCommand.createRequestCommand(RequestCode.REGISTER_BROKER, requestHeader);
         request.setBody(body);
 
