@@ -56,21 +56,28 @@ public class MQFaultStrategy {
     }
 
     public MessageQueue selectOneMessageQueue(final TopicPublishInfo tpInfo, final String lastBrokerName) {
+        // Broker 故障延迟机制
         if (this.sendLatencyFaultEnable) {
             try {
+                // sendWhichqueue 自增
                 int index = tpInfo.getSendWhichQueue().getAndIncrement();
+                // 对消息队列轮询获取一个队列
                 for (int i = 0; i < tpInfo.getMessageQueueList().size(); i++) {
                     int pos = Math.abs(index++) % tpInfo.getMessageQueueList().size();
                     if (pos < 0)
                         pos = 0;
                     MessageQueue mq = tpInfo.getMessageQueueList().get(pos);
+                    // 验证队列是否可用
                     if (latencyFaultTolerance.isAvailable(mq.getBrokerName()))
                         return mq;
                 }
 
+                // 从规避的Broker中 选择一个可用的Broker
                 final String notBestBroker = latencyFaultTolerance.pickOneAtLeast();
+                // 获得Broker 的写队列集合
                 int writeQueueNums = tpInfo.getQueueIdByBroker(notBestBroker);
                 if (writeQueueNums > 0) {
+                    // 获得一个队列 指定Broker和队列ID并返回
                     final MessageQueue mq = tpInfo.selectOneMessageQueue();
                     if (notBestBroker != null) {
                         mq.setBrokerName(notBestBroker);
@@ -92,17 +99,21 @@ public class MQFaultStrategy {
 
     public void updateFaultItem(final String brokerName, final long currentLatency, boolean isolation) {
         if (this.sendLatencyFaultEnable) {
+            // 设置Broker的规避时长
             long duration = computeNotAvailableDuration(isolation ? 30000 : currentLatency);
+            // 更新改FaultItem规避时长
             this.latencyFaultTolerance.updateFaultItem(brokerName, currentLatency, duration);
         }
     }
 
     private long computeNotAvailableDuration(final long currentLatency) {
+        //遍历latencyMax
         for (int i = latencyMax.length - 1; i >= 0; i--) {
+            // 找到第一个比 currentlatency的latencyMax值
             if (currentLatency >= latencyMax[i])
                 return this.notAvailableDuration[i];
         }
-
+        // 没有返回零
         return 0;
     }
 }

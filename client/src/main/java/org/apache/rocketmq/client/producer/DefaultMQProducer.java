@@ -907,6 +907,7 @@ public class DefaultMQProducer extends ClientConfig implements MQProducer {
     @Override
     public SendResult send(Collection<Message> msgs,
         MessageQueue messageQueue) throws MQClientException, RemotingException, MQBrokerException, InterruptedException {
+        // 将消息压缩成一条然后发出去
         return this.defaultMQProducerImpl.send(batch(msgs), messageQueue);
     }
 
@@ -962,12 +963,15 @@ public class DefaultMQProducer extends ClientConfig implements MQProducer {
     private MessageBatch batch(Collection<Message> msgs) throws MQClientException {
         MessageBatch msgBatch;
         try {
+            // 将集合消息封装到MessageBatch
             msgBatch = MessageBatch.generateFromList(msgs);
+            // 遍历消息集合 ，检查消息的合法性 ，设置消息ID , 设置Topic
             for (Message message : msgBatch) {
                 Validators.checkMessage(message, this);
                 MessageClientIDSetter.setUniqID(message);
                 message.setTopic(withNamespace(message.getTopic()));
             }
+            // 压缩消息，设置消息body
             msgBatch.setBody(msgBatch.encode());
         } catch (Exception e) {
             throw new MQClientException("Failed to initiate the MessageBatch", e);
