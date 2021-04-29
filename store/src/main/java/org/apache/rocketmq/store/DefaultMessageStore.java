@@ -1849,6 +1849,7 @@ public class DefaultMessageStore implements MessageStore {
         private long lastFlushTimestamp = 0;
 
         private void doFlush(int retryTimes) {
+            System.out.println("doFlush 。。。。。。。。。。。。");
             int flushConsumeQueueLeastPages = DefaultMessageStore.this.getMessageStoreConfig().getFlushConsumeQueueLeastPages();
 
             if (retryTimes == RETRY_TIMES_OVER) {
@@ -1888,8 +1889,11 @@ public class DefaultMessageStore implements MessageStore {
             DefaultMessageStore.log.info(this.getServiceName() + " service started");
 
             while (!this.isStopped()) {
+
                 try {
+
                     int interval = DefaultMessageStore.this.getMessageStoreConfig().getFlushIntervalConsumeQueue();
+                    System.out.println("FlushConsumeQueueService : " +  interval);
                     this.waitForRunning(interval);
                     this.doFlush(1);
                 } catch (Exception e) {
