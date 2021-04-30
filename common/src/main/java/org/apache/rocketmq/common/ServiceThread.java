@@ -136,8 +136,13 @@ public abstract class ServiceThread implements Runnable {
         waitPoint.reset();
 
         try {
+            //System.out.println("waitPoint await 方法 ... start ... ");
+            //waitPoint.await();
+
             waitPoint.await(interval, TimeUnit.MILLISECONDS);
+            //System.out.println("waitPoint await 方法 ... end ... ");
         } catch (InterruptedException e) {
+            System.out.println(e);
             log.error("Interrupted", e);
         } finally {
             hasNotified.set(false);

@@ -705,6 +705,8 @@ public class CommitLog {
 
         long elapsedTimeInLock = 0;
         MappedFile unlockMappedFile = null;
+
+        // 获取最后一个 mappedFile
         MappedFile mappedFile = this.mappedFileQueue.getLastMappedFile();
 
         //fine-grained lock instead of the coarse-grained
@@ -721,6 +723,7 @@ public class CommitLog {
             // global
             messageExtBatch.setStoreTimestamp(beginLockTimestamp);
 
+            // 不存在则创建
             if (null == mappedFile || mappedFile.isFull()) {
                 mappedFile = this.mappedFileQueue.getLastMappedFile(0); // Mark: NewFile may be cause noise
             }
@@ -730,7 +733,9 @@ public class CommitLog {
                 return CompletableFuture.completedFuture(new PutMessageResult(PutMessageStatus.CREATE_MAPEDFILE_FAILED, null));
             }
 
+            // 追加消息到 mappedFile
             result = mappedFile.appendMessages(messageExtBatch, this.appendMessageCallback);
+
             switch (result.getStatus()) {
                 case PUT_OK:
                     break;
@@ -776,7 +781,9 @@ public class CommitLog {
         storeStatsService.getSinglePutMessageTopicTimesTotal(messageExtBatch.getTopic()).addAndGet(result.getMsgNum());
         storeStatsService.getSinglePutMessageTopicSizeTotal(messageExtBatch.getTopic()).addAndGet(result.getWroteBytes());
 
+        // 刷盘
         CompletableFuture<PutMessageStatus> flushOKFuture = submitFlushRequest(result, messageExtBatch);
+        // 主从复制
         CompletableFuture<PutMessageStatus> replicaOKFuture = submitReplicaRequest(result, messageExtBatch);
         return flushOKFuture.thenCombine(replicaOKFuture, (flushStatus, replicaStatus) -> {
             if (flushStatus != PutMessageStatus.PUT_OK) {
@@ -965,6 +972,7 @@ public class CommitLog {
     }
 
 
+    //刷盘处理
     public void handleDiskFlush(AppendMessageResult result, PutMessageResult putMessageResult, MessageExt messageExt) {
         // Synchronization flush
         if (FlushDiskType.SYNC_FLUSH == this.defaultMessageStore.getMessageStoreConfig().getFlushDiskType()) {
@@ -1264,6 +1272,7 @@ public class CommitLog {
         public void run() {
             CommitLog.log.info(this.getServiceName() + " service started");
             while (!this.isStopped()) {
+                System.out.println("CommitRealTimeService - FlushCommitLogService -  run");
                 //间隔时间,默认200ms
                 int interval = CommitLog.this.defaultMessageStore.getMessageStoreConfig().getCommitIntervalCommitLog();
                 //一次提交的至少页数
@@ -1315,6 +1324,7 @@ public class CommitLog {
             CommitLog.log.info(this.getServiceName() + " service started");
 
             while (!this.isStopped()) {
+                //System.out.println("FlushRealTimeService - FlushCommitLogService -  run");
                 //表示await方法等待,默认false
                 boolean flushCommitLogTimed = CommitLog.this.defaultMessageStore.getMessageStoreConfig().isFlushCommitLogTimed();
                 //线程执行时间间隔
@@ -1481,8 +1491,9 @@ public class CommitLog {
 
             while (!this.isStopped()) {
                 try {
+                    System.out.println("GroupCommitService - FlushCommitLogService -  run");
                     //线程等待10ms
-                    this.waitForRunning(10);
+                    this.waitForRunning(100000);
                     //执行提交
                     this.doCommit();
                 } catch (Exception e) {

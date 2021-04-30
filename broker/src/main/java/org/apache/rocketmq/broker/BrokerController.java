@@ -893,7 +893,7 @@ public class BrokerController {
             @Override
             public void run() {
                 try {
-                    System.out.println("每 30s 向NameServer 进行注册 ！！");
+                    //System.out.println("每 30s 向NameServer 进行注册 ！！");
                     BrokerController.this.registerBrokerAll(true, false, brokerConfig.isForceRegister());
                 } catch (Throwable e) {
                     log.error("registerBrokerAll Exception", e);
