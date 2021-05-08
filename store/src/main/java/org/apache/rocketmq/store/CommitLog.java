@@ -564,6 +564,7 @@ public class CommitLog {
     }
 
     public CompletableFuture<PutMessageResult> asyncPutMessage(final MessageExtBrokerInner msg) {
+
         // Set the storage time
         msg.setStoreTimestamp(System.currentTimeMillis());
         // Set the message body BODY CRC (consider the most appropriate setting
@@ -571,6 +572,8 @@ public class CommitLog {
         msg.setBodyCRC(UtilAll.crc32(msg.getBody()));
         // Back to Results
         AppendMessageResult result = null;
+
+        System.out.println("线程：" + Thread.currentThread().getName() + "CommitLog - asyncPutMessage");
 
         StoreStatsService storeStatsService = this.defaultMessageStore.getStoreStatsService();
 
@@ -674,6 +677,7 @@ public class CommitLog {
         // 执行ha 主从同步
         CompletableFuture<PutMessageStatus> replicaResultFuture = submitReplicaRequest(result, msg);
         return flushResultFuture.thenCombine(replicaResultFuture, (flushStatus, replicaStatus) -> {
+            System.out.println("线程：" + Thread.currentThread().getName() + "flushResultFuture.thenCombine");
             if (flushStatus != PutMessageStatus.PUT_OK) {
                 putMessageResult.setPutMessageStatus(flushStatus);
             }
@@ -928,6 +932,8 @@ public class CommitLog {
     }
 
     public CompletableFuture<PutMessageStatus> submitFlushRequest(AppendMessageResult result, MessageExt messageExt) {
+
+        System.out.println("线程：" + Thread.currentThread().getName() + "CommitLog - submitFlushRequest");
         // Synchronization flush
         if (FlushDiskType.SYNC_FLUSH == this.defaultMessageStore.getMessageStoreConfig().getFlushDiskType()) {
             final GroupCommitService service = (GroupCommitService) this.flushCommitLogService;
@@ -1425,10 +1431,12 @@ public class CommitLog {
         }
 
         public void wakeupCustomer(final PutMessageStatus putMessageStatus) {
+            System.out.println("线程：" + Thread.currentThread().getName() + "GroupCommitRequest - wakeupCustomer");
             this.flushOKFuture.complete(putMessageStatus);
         }
 
         public CompletableFuture<PutMessageStatus> future() {
+            System.out.println("线程：" + Thread.currentThread().getName() + "GroupCommitRequest - future");
             return flushOKFuture;
         }
 
@@ -1449,6 +1457,7 @@ public class CommitLog {
         }
 
         private void swapRequests() {
+            System.out.println("+++++++++++++ swap requests");
             List<GroupCommitRequest> tmp = this.requestsWrite;
             this.requestsWrite = this.requestsRead;
             this.requestsRead = tmp;
@@ -1493,7 +1502,7 @@ public class CommitLog {
                 try {
                     System.out.println("GroupCommitService - FlushCommitLogService -  run");
                     //线程等待10ms
-                    this.waitForRunning(100000);
+                    this.waitForRunning(10000000);
                     //执行提交
                     this.doCommit();
                 } catch (Exception e) {
@@ -1510,6 +1519,7 @@ public class CommitLog {
             }
 
             synchronized (this) {
+                System.out.println("________________________  swap reques t ");
                 this.swapRequests();
             }
 

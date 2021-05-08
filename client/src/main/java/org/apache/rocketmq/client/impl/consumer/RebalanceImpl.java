@@ -213,6 +213,7 @@ public abstract class RebalanceImpl {
         }
     }
 
+    //遍历订阅消息 对每个主题的订阅队列进行重新负载
     public void doRebalance(final boolean isOrder) {
         Map<String, SubscriptionData> subTable = this.getSubscriptionInner();
         if (subTable != null) {
@@ -255,8 +256,12 @@ public abstract class RebalanceImpl {
                 break;
             }
             case CLUSTERING: {
+                // 从主题订阅消息缓存表中，获取主题的队列消息
                 Set<MessageQueue> mqSet = this.topicSubscribeInfoTable.get(topic);
+                // 查找该主题订阅组中所有的消费者id
                 List<String> cidAll = this.mQClientFactory.findConsumerIdList(topic, consumerGroup);
+
+                //
                 if (null == mqSet) {
                     if (!topic.startsWith(MixAll.RETRY_GROUP_TOPIC_PREFIX)) {
                         log.warn("doRebalance, {}, but the topic[{}] not exist.", consumerGroup, topic);
@@ -267,6 +272,7 @@ public abstract class RebalanceImpl {
                     log.warn("doRebalance, {} {}, get consumer id list failed", consumerGroup, topic);
                 }
 
+                // 给消费者重新分配队列
                 if (mqSet != null && cidAll != null) {
                     List<MessageQueue> mqAll = new ArrayList<MessageQueue>();
                     mqAll.addAll(mqSet);

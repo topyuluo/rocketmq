@@ -705,13 +705,12 @@ public class MQClientAPIImpl {
         return sendResult;
     }
 
-    public PullResult pullMessage(
-        final String addr,
-        final PullMessageRequestHeader requestHeader,
-        final long timeoutMillis,
-        final CommunicationMode communicationMode,
-        final PullCallback pullCallback
-    ) throws RemotingException, MQBrokerException, InterruptedException {
+    public PullResult pullMessage(final String addr
+            , final PullMessageRequestHeader requestHeader
+            , final long timeoutMillis
+            , final CommunicationMode communicationMode
+            , final PullCallback pullCallback) throws RemotingException, MQBrokerException, InterruptedException {
+        System.out.println("MQClientAPIImpl -- pullMessage ");
         RemotingCommand request = RemotingCommand.createRequestCommand(RequestCode.PULL_MESSAGE, requestHeader);
 
         switch (communicationMode) {
@@ -731,12 +730,12 @@ public class MQClientAPIImpl {
         return null;
     }
 
-    private void pullMessageAsync(
-        final String addr,
-        final RemotingCommand request,
-        final long timeoutMillis,
-        final PullCallback pullCallback
-    ) throws RemotingException, InterruptedException {
+    private void pullMessageAsync(final String addr
+            , final RemotingCommand request
+            , final long timeoutMillis
+            , final PullCallback pullCallback) throws RemotingException, InterruptedException {
+        System.out.println("MQClientAPIImpl -- pullMessageAsync ");
+        // 执行回调函数
         this.remotingClient.invokeAsync(addr, request, timeoutMillis, new InvokeCallback() {
             @Override
             public void operationComplete(ResponseFuture responseFuture) {
@@ -773,10 +772,9 @@ public class MQClientAPIImpl {
         return this.processPullResponse(response, addr);
     }
 
-    private PullResult processPullResponse(
-        final RemotingCommand response,
-        final String addr) throws MQBrokerException, RemotingCommandException {
+    private PullResult processPullResponse(final RemotingCommand response, final String addr) throws MQBrokerException, RemotingCommandException {
         PullStatus pullStatus = PullStatus.NO_NEW_MSG;
+        //响应码判断
         switch (response.getCode()) {
             case ResponseCode.SUCCESS:
                 pullStatus = PullStatus.FOUND;
@@ -794,12 +792,11 @@ public class MQClientAPIImpl {
             default:
                 throw new MQBrokerException(response.getCode(), response.getRemark(), addr);
         }
+        // 解码响应头
+        PullMessageResponseHeader responseHeader = (PullMessageResponseHeader) response.decodeCommandCustomHeader(PullMessageResponseHeader.class);
 
-        PullMessageResponseHeader responseHeader =
-            (PullMessageResponseHeader) response.decodeCommandCustomHeader(PullMessageResponseHeader.class);
-
-        return new PullResultExt(pullStatus, responseHeader.getNextBeginOffset(), responseHeader.getMinOffset(),
-            responseHeader.getMaxOffset(), null, responseHeader.getSuggestWhichBrokerId(), response.getBody());
+        //封装pullResultExt对象
+        return new PullResultExt(pullStatus, responseHeader.getNextBeginOffset(), responseHeader.getMinOffset(), responseHeader.getMaxOffset(), null, responseHeader.getSuggestWhichBrokerId(), response.getBody());
     }
 
     public MessageExt viewMessage(final String addr, final long phyoffset, final long timeoutMillis)

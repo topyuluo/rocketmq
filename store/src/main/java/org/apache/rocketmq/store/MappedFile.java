@@ -206,6 +206,7 @@ public class MappedFile extends ReferenceResource {
     }
 
     public AppendMessageResult appendMessage(final MessageExtBrokerInner msg, final AppendMessageCallback cb) {
+        System.out.println("线程：" + Thread.currentThread().getName() + "MappedFile - appendMessage");
         return appendMessagesInner(msg, cb);
     }
 
